@@ -1,5 +1,5 @@
 ## Introduction
-This document provides an overview of the end-to-end testing performed on the Grade 1 Mathematics page of the TVO Learn website using Cypress as the testing framework. The purpose is to ensure that the page functions correctly and all key elements perform as expected. 
+This document provides an overview of the end-to-end testing performed on the Grade 1 Mathematics page of the TVO Learn website using Cypress as the testing framework. The purpose is to ensure that the page functions correctly and all key elements perform as expected. Please locate the cypress/e2e/validate_g1_math_page.cy.js to see the test script.
 ## Test approach 
 The testing approach involved creating automated test scripts using Cypress to simulate user interactions and verify the behaviour of the web page. Each test case was designed to cover a specific functionality or element on the page.
 ## Test cases covered

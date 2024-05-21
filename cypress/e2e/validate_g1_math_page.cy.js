@@ -1,34 +1,47 @@
 describe('Grade 1 Mathematics Page', () => {
+  /**
+ * The beforeEach block ensure that the page content is controlled and that hyperlink navigation 
+ * and external requests are effectively prevented during test execution, allowing for 
+ * consistent and isolated test conditions.
+ */
+
   beforeEach(() => {
-    // Intercept and stub all GET and POST requests with empty responses
     cy.intercept('GET', '**', { statusCode: 200, body: {} }).as('getRequest')
     cy.intercept('POST', '**', { statusCode: 200, body: {} }).as('postRequest')
     cy.request('https://tvolearn.com/pages/grade-1-mathematics').then((response) => {
-      // Inject the response HTML into a document
     cy.document().invoke('write', response.body)
     })
   })
 
+
+  /**
+ * Test Grade 1 - Mathematics page loads successfully
+ * and that key elements are displayed without making extra requests.
+ * 
+ * 1. Verifies page title includes 'Grade 1 - Mathematics'.
+ * 2. Confirms main content, all images, all icons are visible.
+ * 
+ */
+
   it('should load successfully and display key elements without extra requests', () => {
-      
-      // Ensure the main content is visible
-      cy.get('main').should('be.visible')
       cy.title().should('include', 'Grade 1 - Mathematics')
-
-      // Ensure the main content is visible
       cy.get('main').should('be.visible')
-
-      // Check that all images are visible
       cy.get('img').should('be.visible')
-
-      // Check that all icons (assuming they use a common class, e.g., .icon) are visible
       cy.get('.icon').should('be.visible')
-
     })
+
+
+  /**
+ * Test all hyperlinks on the page are not broken.
+ * 
+ * 1. Selects all anchor (`<a>`) tags on the page.
+ * 2. Iterates over each anchor tag and checks if it has a valid `href` attribute.
+ * 3. For each valid `href`, sends a request to the URL.
+ * 4. Verifies that the response status code for each request is 200.
+ */
 
   it('should ensure all hyperlinks are not broken', () => {
       
-    // Get all anchor tags and check each one
     cy.get('a').each($link => {
       const href = $link.prop('href')
       if (href) {
@@ -39,42 +52,54 @@ describe('Grade 1 Mathematics Page', () => {
       })
     })
 
+  /**
+ * Test ensures the proper setting, retrieving, and clearing of a cookie.
+ */
+
   it('should set, get, and clear a cookie', () => {
-      // Set a cookie
     cy.setCookie('myCookie', 'cookieValue')
-      
-      // Get the cookie and verify its value
     cy.getCookie('myCookie').should('have.property', 'value', 'cookieValue')
-      
-      // Clear the cookie
     cy.clearCookie('myCookie')
-      
-      // Verify the cookie is cleared
     cy.getCookie('myCookie').should('not.exist')
     })
 
-  it('should ensure the subscription form submit successfully', () => {
-    // Type email into the input box
-    cy.get('#mce-EMAIL').should('be.visible').type('test@example.com')
 
-    // Click the subscribe button
+  /**
+ * Test subscription form submits successfully.
+ * 
+ * 1. Types an email address and click subscribe button
+ * 
+ */
+
+  it('should ensure the subscription form submit successfully', () => {
+
+    cy.get('#mce-EMAIL').should('be.visible').type('test@example.com')
     cy.get('#mc-embedded-subscribe').should('be.visible').click()
 
-
     })
+
+  /**
+ * Test user can type into the search input and submit the form successfully.
+ */
+
   it('should allow typing into the search input and clicking the submit button', () => {
-    // Intercept the form submission
+    
     cy.intercept('GET', '/search*').as('searchRequest')
-
-    // Type into the search input
     cy.get('input[name="q"]').should('be.visible').type('Math')
-
-    // Click the submit button
     cy.get('button[type="submit"]').should('be.visible').click()
-
-    // Wait for the search request and verify the URL
     cy.wait('@searchRequest').its('request.url').should('include', '/search')
+
     })
+
+  /**
+ * Test navigation links on the page lead to the correct URLs.
+ * 
+ * 1. Defines a list of navigation links with their corresponding selectors and expected URLs.
+ * 2. Iterates over each navigation link and performs the following checks:
+ *    - Verifies that the link is present and visible on the page.
+ *    - Confirms that the 'href' attribute of the link includes the expected URL.
+ */
+
   it('should navigate to the correct page', () => {
     // Define a list of navigation links and their expected URLs
     const navLinks = [
@@ -95,18 +120,24 @@ describe('Grade 1 Mathematics Page', () => {
       { selector: 'a.mobile-nav__link[href="/pages/for_teachers"]', expectedUrl: '/pages/for_teachers' },
     ]
 
-    // Iterate over each navigation link
+    // Verify each URL path is visiable and correct
     navLinks.forEach(link => {
-      // Check that the link is present and visible
-      cy.get(link.selector).should('be.visible')
 
-      // Verify the URL path
+      cy.get(link.selector).should('be.visible')
       cy.get(link.selector).should('have.attr', 'href').and('include', link.expectedUrl)
+
     })
-      })
- 
+  })
+
+  /**
+ * Test the page displays correctly on different screen sizes.
+ * 
+ * 1. Test the viewport to the dimensions of an iPhone 6, iPad 2, MacBook 15 and verifies that the main content area is visible.
+ * 
+ */
+
   it('should display correctly on different screen sizes', () => {
-    // Check different screen size
+
     cy.viewport('iphone-6')
     cy.get('main').should('be.visible')
 
@@ -115,29 +146,47 @@ describe('Grade 1 Mathematics Page', () => {
 
     cy.viewport('macbook-15')
     cy.get('main').should('be.visible')
-    })
+
+  })
+
+  /**
+ * Test the "Return to Top" button appears when the page is scrolled down 20px
+ * 
+ * 1. Scrolls down to the footer to simulate a scroll down of at least 20px.
+ * 2. Verifies that the "Return to Top" button is visible and displayed as a block element.
+ * 3. Clicks the "Return to Top" button.
+ * 4. Verifies that the page scrolls to the top and the "Return to Top" button is no longer visible.
+ * 
+ */
 
   it('should show the button when scrolled down 20px and scroll to top when clicked', () => {
-    // Scroll down to the footer
+    
     cy.get('footer').scrollIntoView() 
-
-    // Check that the "Return to Top" button is visible
     cy.get('#bttopBtn', { timeout: 10000 }).should('be.visible').and('have.css', 'display', 'block')
-
-    // Click the "Return to Top" button
     cy.get('#bttopBtn').click()
+    cy.get('#bttopBtn').should('not.be.visible')
 
-    // Verify the page is scrolled to the top and the buttom is hidden
-    cy.get('#bttopBtn').should('not.be.visible')
-    })
-  
+  })
+
+  /**
+ * Test the "Return to Top" button is hidden when the page is scrolled up 
+ * to less than 20px from the top.
+ * 
+ * 1. Scrolls the page to the top.
+ * 2. Verifies that the "Return to Top" button is not visible.
+ * 
+ */
+
   it('should be hidden when page is scrolled up to less than 20px', () => {
-    // Scroll the page up to the top
+
     cy.scrollTo(0, 0)
-  
-    // Check that the "Return to Top" button is hidden
     cy.get('#bttopBtn').should('not.be.visible')
-    })
+
+  })
+
+  /**
+ * Test the social media links open correctly by verifying their URLs.
+ */
 
   it('should open social media links correctly', () => {
     // Define a list of social media links and their expected URLs
@@ -148,10 +197,9 @@ describe('Grade 1 Mathematics Page', () => {
       { selector: 'a[href*="youtube.com"]', urlPart: 'youtube.com' },
       { selector: 'a[href*="tvolearn.com"]', urlPart: 'tvolearn.com' },
      
-      // Add other social media links as needed
     ]
 
-    // Iterate over each social media link
+    // Iterates over each social media link and performs the checks
     socialMediaLinks.forEach(link => {
       cy.get(link.selector).should('have.attr', 'href').and('include', link.urlPart)
     })

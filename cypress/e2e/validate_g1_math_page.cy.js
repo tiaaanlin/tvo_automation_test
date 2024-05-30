@@ -1,3 +1,15 @@
+import VerifyTitleAction from '../actions/verifyTitleAction';
+import VerifyElementVisibleAction from '../actions/verifyElementVisibleAction';
+import VerifyLinksAction from '../actions/VerifyLinksAction';
+import ManageCookieAction from '../actions/manageCookieAction';
+import SubmitSubscriptionFormAction from '../actions/submitSubscriptionFormAction';
+import PerformSearchAction from '../actions/performSearchAction';
+import VerifyNavigationLinksAction from '../actions/verifyNavigationLinksAction';
+import CheckViewportAction from '../actions/checkViewportAction';
+import VerifyBackToTopAction from '../actions/verifyBackToTopAction';
+import CheckBackToTopButtonVisibilityAction from '../actions/checkBackToTopButtonVisibilityAction';
+import VerifySocialMediaLinksAction from '../actions/verifySocialMediaLinksAction';
+
 describe('Grade 1 Mathematics Page', () => {
   /**
  * The beforeEach block ensure that the page content is controlled and that hyperlink navigation 
@@ -24,10 +36,18 @@ describe('Grade 1 Mathematics Page', () => {
  */
 
   it('should load successfully and display key elements without extra requests', () => {
-      cy.title().should('include', 'Grade 1 - Mathematics')
-      cy.get('main').should('be.visible')
-      cy.get('img').should('be.visible')
-      cy.get('.icon').should('be.visible')
+    
+    const verifyTitle = new VerifyTitleAction('Grade 1 - Mathematics');
+    const verifyMainVisible = new VerifyElementVisibleAction('main');
+    const verifyImgVisible = new VerifyElementVisibleAction('img');
+    const verifyIconVisible = new VerifyElementVisibleAction('.icon');
+
+
+    verifyTitle.execute();
+    verifyMainVisible.execute();
+    verifyImgVisible.execute();
+    verifyIconVisible.execute();
+    
     })
 
 
@@ -42,26 +62,21 @@ describe('Grade 1 Mathematics Page', () => {
 
   it('should ensure all hyperlinks are not broken', () => {
       
-    cy.get('a').each($link => {
-      const href = $link.prop('href')
-      if (href) {
-        cy.request(href).then(response => {
-          expect(response.status).to.eq(200)
-          })
-        }
-      })
-    })
+    
+    const verifyLinks = new VerifyLinksAction('a');
+    verifyLinks.execute();
+
+  });
 
   /**
  * Test ensures the proper setting, retrieving, and clearing of a cookie.
  */
 
   it('should set, get, and clear a cookie', () => {
-    cy.setCookie('myCookie', 'cookieValue')
-    cy.getCookie('myCookie').should('have.property', 'value', 'cookieValue')
-    cy.clearCookie('myCookie')
-    cy.getCookie('myCookie').should('not.exist')
-    })
+    
+    const manageCookie = new ManageCookieAction('myCookie', 'cookieValue');
+    manageCookie.execute();
+  })
 
 
   /**
@@ -73,8 +88,8 @@ describe('Grade 1 Mathematics Page', () => {
 
   it('should ensure the subscription form submit successfully', () => {
 
-    cy.get('#mce-EMAIL').should('be.visible').type('test@example.com')
-    cy.get('#mc-embedded-subscribe').should('be.visible').click()
+    const submitSubscriptionForm = new SubmitSubscriptionFormAction('test@example.com');
+    submitSubscriptionForm.execute();
 
     })
 
@@ -84,10 +99,8 @@ describe('Grade 1 Mathematics Page', () => {
 
   it('should allow typing into the search input and clicking the submit button', () => {
     
-    cy.intercept('GET', '/search*').as('searchRequest')
-    cy.get('input[name="q"]').should('be.visible').type('Math')
-    cy.get('button[type="submit"]').should('be.visible').click()
-    cy.wait('@searchRequest').its('request.url').should('include', '/search')
+    const performSearch = new PerformSearchAction('Math');
+    performSearch.execute();
 
     })
 
@@ -120,13 +133,10 @@ describe('Grade 1 Mathematics Page', () => {
       { selector: 'a.mobile-nav__link[href="/pages/for_teachers"]', expectedUrl: '/pages/for_teachers' },
     ]
 
-    // Verify each URL path is visiable and correct
-    navLinks.forEach(link => {
+    
+    const verifyNavigationLinks = new VerifyNavigationLinksAction(navLinks);
+    verifyNavigationLinks.execute();
 
-      cy.get(link.selector).should('be.visible')
-      cy.get(link.selector).should('have.attr', 'href').and('include', link.expectedUrl)
-
-    })
   })
 
   /**
@@ -138,14 +148,11 @@ describe('Grade 1 Mathematics Page', () => {
 
   it('should display correctly on different screen sizes', () => {
 
-    cy.viewport('iphone-6')
-    cy.get('main').should('be.visible')
+   
+    const viewports = ['iphone-6', 'ipad-2', 'macbook-15'];
+    const checkViewportAction = new CheckViewportAction(viewports, 'main');
 
-    cy.viewport('ipad-2')
-    cy.get('main').should('be.visible')
-
-    cy.viewport('macbook-15')
-    cy.get('main').should('be.visible')
+    checkViewportAction.execute();
 
   })
 
@@ -160,11 +167,9 @@ describe('Grade 1 Mathematics Page', () => {
  */
 
   it('should show the button when scrolled down 20px and scroll to top when clicked', () => {
-    
-    cy.get('footer').scrollIntoView() 
-    cy.get('#bttopBtn', { timeout: 10000 }).should('be.visible').and('have.css', 'display', 'block')
-    cy.get('#bttopBtn').click()
-    cy.get('#bttopBtn').should('not.be.visible')
+   
+    const verifyBackToTopAction = new VerifyBackToTopAction('footer', '#bttopBtn');
+    verifyBackToTopAction.execute();
 
   })
 
@@ -179,8 +184,8 @@ describe('Grade 1 Mathematics Page', () => {
 
   it('should be hidden when page is scrolled up to less than 20px', () => {
 
-    cy.scrollTo(0, 0)
-    cy.get('#bttopBtn').should('not.be.visible')
+    const checkBackToTopButtonVisibility = new CheckBackToTopButtonVisibilityAction('#bttopBtn');
+    checkBackToTopButtonVisibility.execute();
 
   })
 
@@ -199,10 +204,9 @@ describe('Grade 1 Mathematics Page', () => {
      
     ]
 
-    // Iterates over each social media link and performs the checks
-    socialMediaLinks.forEach(link => {
-      cy.get(link.selector).should('have.attr', 'href').and('include', link.urlPart)
-    })
+    const verifySocialMediaLinks = new VerifySocialMediaLinksAction(socialMediaLinks);
+    verifySocialMediaLinks.execute();
+
   })
 })
  
